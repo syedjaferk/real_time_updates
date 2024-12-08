@@ -1,6 +1,7 @@
 # server.py
 from flask import Flask, jsonify
 import sqlite3
+import time
 from datetime import datetime
 from flask_cors import CORS, cross_origin
 
@@ -30,24 +31,39 @@ def init_db():
 # Initialize database
 init_db()
 
-# Endpoint to check for new messages for a user
-@app.route('/check-messages/<int:user_id>', methods=['GET'])
-def check_messages(user_id):
+# Check if there is a new message for a user
+def get_latest_message(user_id):
     conn = connect_db()
     cursor = conn.cursor()
     cursor.execute("SELECT message, timestamp FROM messages WHERE user_id = ? ORDER BY timestamp DESC LIMIT 1", (user_id,))
     result = cursor.fetchone()
     conn.close()
-    
-    if result:
-        return jsonify({
-            'message': result[0],
-            'timestamp': result[1],
-        }), 200
-    else:
-        return jsonify({
-            'message': 'No new messages'
-        }), 200
+    return result
+
+
+@app.route('/check-messages/<int:user_id>', methods=['GET'])
+def check_messages(user_id):
+    timeout = 10  # Long polling timeout (in seconds)
+    poll_interval = 1  # Interval to check for new messages (in seconds)
+
+    start_time = time.time()
+
+    while time.time() - start_time < timeout:
+        message = get_latest_message(user_id)
+        
+        if message:
+            return jsonify({
+                'message': message[0],
+                'timestamp': message[1]
+            }), 200
+
+        # No new message, wait and try again
+        time.sleep(poll_interval)
+
+    # No new messages after timeout period
+    return jsonify({
+        'message': 'No new messages'
+    }), 200
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,0 +1,1 @@
+netstat -ant | grep ESTABLISHED | & ss - commands can be used to see on TCP associated connections over LINUX - Transport Lapyer PORT associated applications 

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jafer's Messaging App</title>
+</head>
+<body>
+    <h1>Welcome to Jafer's Messaging App</h1>
+    <div id="messages">
+        Checking for new messages...
+    </div>
+
+    <script>
+        const userId = 1;  // Assuming we're checking for user with ID 1
+        const messagesDiv = document.getElementById('messages');
+
+        function checkForMessages() {
+            fetch(`http://127.0.0.1:5000/check-messages/${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message !== "No new messages") {
+                        messagesDiv.innerHTML = `New message: ${data.message} <br> Received at: ${data.timestamp}`;
+                    } else {
+                        messagesDiv.innerHTML = "No new messages";
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    messagesDiv.innerHTML = "Error checking for messages";
+                });
+        }
+
+        // Poll every 10 seconds
+        setInterval(checkForMessages, 5000);
+
+        // Initial check
+        checkForMessages();
+    </script>
+</body>
+</html>

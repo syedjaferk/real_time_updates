@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Real Time Updates",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
