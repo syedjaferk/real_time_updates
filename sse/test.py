@@ -8,8 +8,8 @@ def connect_db():
 def insert_message(user_id, message):
     conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO messages (user_id, message, message_sent) VALUES (?, ?, ?)', (user_id, message, 'N'))
+    cursor.execute('INSERT INTO messages (user_id, message) VALUES (?, ?)', (user_id, message))
     conn.commit()
     conn.close()
 
-insert_message(1, "Hello, Jafer! Happy Morning")
+insert_message(1, "another message")

@@ -22,7 +22,8 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER,
             message TEXT,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            message_sent TEXT
         )
     ''')
     conn.commit()
@@ -35,10 +36,16 @@ init_db()
 def get_latest_message(user_id):
     conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT message, timestamp FROM messages WHERE user_id = ? ORDER BY timestamp DESC LIMIT 1", (user_id,))
+    cursor.execute("SELECT message, timestamp FROM messages WHERE user_id = ? AND message_sent = 'N' ORDER BY timestamp DESC LIMIT 1", (user_id,))
     result = cursor.fetchone()
     conn.close()
     return result
+
+def update_message_sent(user_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE messages SET message_sent = 'Y' WHERE user_id = ? ORDER BY timestamp DESC LIMIT 1", (user_id,))
+    conn.commit()
 
 
 @app.route('/check-messages/<int:user_id>', methods=['GET'])
@@ -47,11 +54,11 @@ def check_messages(user_id):
     poll_interval = 1  # Interval to check for new messages (in seconds)
 
     start_time = time.time()
-
-    while time.time() - start_time < timeout:
+    while (time.time() - start_time) < timeout:
         message = get_latest_message(user_id)
         
         if message:
+            update_message_sent(user_id)
             return jsonify({
                 'message': message[0],
                 'timestamp': message[1]

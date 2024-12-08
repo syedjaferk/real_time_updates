@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jafer's Messaging App (SSE)</title>
+</head>
+<body>
+    <h1>Welcome to Jafer's Messaging App (SSE)</h1>
+    <div id="messages">
+        Waiting for new messages...
+    </div>
+
+    <script>
+        const messagesDiv = document.getElementById('messages');
+
+        const userId = 1; // Replace with the actual user ID
+        const eventSource = new EventSource(`http://localhost:5000/stream-messages/${userId}`);
+
+        eventSource.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            messagesDiv.innerHTML = `New message: ${data.message} at ${data.timestamp}`;
+        };
+
+        eventSource.onerror = () => {
+            console.error("SSE connection error!");
+        };
+
+    </script>
+</body>
+</html>
